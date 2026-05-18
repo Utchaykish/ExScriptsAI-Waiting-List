@@ -405,51 +405,46 @@
   })();
 
   /* ── Waitlist form ── */
-  async function handleJoin() {
-    const input  = document.getElementById('email-input');
-    const btn    = document.getElementById('join-btn');
-    const errMsg = document.getElementById('error-msg');
-    const email  = input.value.trim();
+async function handleJoin() {
+  const input  = document.getElementById('email-input');
+  const btn    = document.getElementById('join-btn');
+  const errMsg = document.getElementById('error-msg');
+  const email  = input.value.trim();
 
-    const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    if (!valid) {
-      input.style.borderColor = '#ff6b6b';
-      errMsg.style.display = 'block';
-      input.focus();
-      setTimeout(() => { input.style.borderColor = ''; errMsg.style.display = 'none'; }, 2500);
-      return;
-    }
-
-    btn.disabled = true;
-    btn.textContent = 'Joining...';
-
-    try {
-      await fetch(GOOGLE_SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: email,
-          timestamp: new Date().toISOString(),
-          source: document.referrer || 'direct'
-        })
-      });
-    } catch (e) {
-      console.warn('Submission note:', e);
-    }
-
-    document.getElementById('form-area').style.display = 'none';
-    const success = document.getElementById('success-area');
-    success.style.display = 'flex';
-
-    const counter = document.getElementById('counter');
-    const n = parseInt(counter.textContent.replace(/,/g, '')) + 1;
-    counter.textContent = n.toLocaleString();
+  const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  if (!valid) {
+    input.style.borderColor = '#ff6b6b';
+    errMsg.style.display = 'block';
+    input.focus();
+    setTimeout(() => { input.style.borderColor = ''; errMsg.style.display = 'none'; }, 2500);
+    return;
   }
 
-  document.getElementById('email-input').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') handleJoin();
-  });
+  btn.disabled = true;
+  btn.textContent = 'Joining...';
+
+  try {
+    const params = new URLSearchParams({
+      email: email,
+      timestamp: new Date().toISOString(),
+      source: document.referrer || 'direct'
+    });
+    await fetch(GOOGLE_SCRIPT_URL + '?' + params.toString(), {
+      method: 'GET',
+      mode: 'no-cors'
+    });
+  } catch (e) {
+    console.warn('Submission note:', e);
+  }
+
+  document.getElementById('form-area').style.display = 'none';
+  const success = document.getElementById('success-area');
+  success.style.display = 'flex';
+
+  const counter = document.getElementById('counter');
+  const n = parseInt(counter.textContent.replace(/,/g, '')) + 1;
+  counter.textContent = n.toLocaleString();
+}
 </script>
 
 </body>
